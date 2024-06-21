@@ -1,0 +1,235 @@
+---
+title: "Linear Relationship Between Boday Fat Percentage and Body Part Circumference"
+author: "Ruiying Liu"
+date: "`r Sys.Date()`"
+output:
+  word_document:
+    toc: yes
+    toc_depth: '4'
+  pdf_document:
+    toc: yes
+    toc_depth: 4
+  html_document:
+    df_print: paged
+    toc: yes
+    toc_depth: 4
+---
+
+```{r knitr-options, include = FALSE}
+knitr::opts_chunk$set(fig.align="center",
+                      fig.height=6,
+                      fig.width=12,
+                      warning = FALSE,
+                      message = FALSE,
+                      comment = NA,
+                      echo=FALSE)
+```
+
+
+```{r}
+library(tidyverse)# dplyr::tibble
+library(knitr) #allows you to create Appendix with all_labels()
+library(tidyverse)
+library(dplyr)
+library(psych) 
+theme_set(theme_bw()) #sets default ggplot output style
+```
+
+
+
+# SUMMARY
+
+
+  Body fat percentage(BFP) is a measure of the proportion of fat tissue in the human body. It is a very important physiological indicator for maintaining health, improving body composition and optimizing athletic performance, so BFP measurement is essential for our daily life. While in the laboratory, BFP can be accurately measured by the techniques such as densitometry, hydrometry, dual energy X-ray absorptiometry, and computed comography (CT) or magnetic rosonance imaging(MRI) imaging (Deurenberg,1999). However, these methods can be costly and inconvenient, and are not practical for field use. To estimate BFP for field purposes, simpler methods that rely on statistical relationships between easily measurable parameters are commonly used. These methods includ skin-fold thickness measurement, bio-electrical impedance, weight-height index(also known as body mass index, BMI) (Deurenberg,1999) and underwater weighing method(Katch and McArdle, 1977). However, these methods require specialized measurement tools and sophistical calculations that may not be easily conducted at home. Moreover also BMI method is race- and sex-specific(Deurenberg,1999), limiting its applicability in diverse populations.
+  Body part circumference, particularly waist circumference (also refered to as abdomen circumference) is a critical indicator of fat mass in obesity studies. Therefore, it may be a useful and practical way for estimating BFP in field settings or at home, as it only requires as measuring tape. However, the conversion from circumference measurement into BFP can be challenging. Therefore, the objective of this paper  is to develop a straightforward linear model that explains the relationship between circumference measurements and BFP, making it easy for daily use as a health assessment tool.
+
+# INTRODUCTION
+
+##  Data description
+ 
+ 
+ Data (source: http://lib.stat.cmu.edu/datasets/bodyfat) in this paper was collected from 252 male adults aged from 22 to 81. BFP listed in this data was accurately estimated using underwater weighing method. 15 variables are included, 
+and from left to right represented: Density determined from underwater weighing, Percent body fat from Siri's (1956) equation, Age (years), Weight (lbs),  Height (inches), Neck circumference (cm), Chest circumference (cm), Abdomen 2 circumference (cm), Hip circumference (cm), Thigh circumference (cm), Knee circumference (cm), Ankle circumference (cm), Biceps (extended) circumference (cm), Forearm circumference (cm) and Wrist circumference (cm). Density determined from underwater weighing (DDUW) is the body density estimated by equation(Katch and McArdle, 1977): 
+$BD = \frac{WA}{WA - WW}/c.f. - LV$, 
+where WA = Weight in air(kg), WW = Weight in water(kg), c.f. = water correction factor, LV = Residual Lung Volume(liters).
+Percent body fat(BFP) is calculated by equation(Siri, 1956) dependent on DDUW:
+$BFP *100 = \frac{495}{BD} -450$
+Other measurements were based on the standards list in Benhke and Wilmore (1974)
+
+Here in this study, only 13 variables were included while the two variables DDUW and Age were not taken into consideration.
+
+```{r load_data}
+#Load Data
+dat<-read.csv("bodyfat_raw_data.csv")
+```
+
+
+## Summary Statistics
+The summary statistics are shown below:
+```{r sum_stat}
+#View summary statistics
+summary(dat)
+```
+
+
+# Data anaylysis 
+
+Based on the summary of this data set, two samples with extreme height and weight were removed to tidy up the data. 
+
+```{r}
+
+dat<-filter(dat, Height >29.5 & Weight < 300)
+
+```
+
+Scatter plots were used identify variables that show linear association with BFP, and R-square calculation were performed to quantify the strength of this association.
+
+## Scatter plots 
+
+
+```{r}
+ggplot(dat, aes(x= Age,y=BFP))+geom_point(color = "blue")
+ggplot(dat, aes(x= Weight,y=BFP))+geom_point(color = "chocolate4")
+ggplot(dat, aes(x= Height,y=BFP))+geom_point(color = "deeppink")
+ggplot(dat, aes(x= Neck,y=BFP))+geom_point(color = "orange")
+ggplot(dat, aes(x= Chest,y=BFP))+geom_point(color = "cadetblue")
+ggplot(dat, aes(x= Abdomen,y=BFP))+geom_point(color = "purple")
+ggplot(dat, aes(x= Hip,y=BFP))+geom_point(color = "yellowgreen")
+ggplot(dat, aes(x= Thigh,y=BFP))+geom_point(color = "lightblue")
+ggplot(dat, aes(x= Knee,y=BFP))+geom_point(color = "darkgreen")
+ggplot(dat, aes(x= Ankle,y=BFP))+geom_point(color = "brown1")
+ggplot(dat, aes(x= Biceps,y=BFP))+geom_point(color = "skyblue")
+ggplot(dat, aes(x= Forearm,y=BFP))+geom_point(color = "darksalmon")
+ggplot(dat, aes(x= Wrist,y=BFP))+geom_point(color = "darkgrey")
+```
+
+## R-square
+```{r}
+
+
+
+Age<- lm(dat$BFP ~ dat$Age)
+r_squared_Age <-summary(Age)$r.squared
+
+Weight<- lm(dat$BFP ~ dat$Weight)
+r_squared_Weight <-summary(Weight)$r.squared
+
+Height<- lm(dat$BFP ~ dat$Height)
+r_squared_Height <-summary(Height)$r.squared
+
+Neck<- lm(dat$BFP ~ dat$Neck)
+r_squared_Neck <-summary(Neck)$r.squared
+
+Chest<- lm(dat$BFP ~ dat$Chest)
+r_squared_Chest <-summary(Chest)$r.squared
+
+Abdomen<- lm(dat$BFP ~ dat$Abdomen)
+r_squared_Abdomen <-summary(Abdomen)$r.squared
+
+Hip<- lm(dat$BFP ~ dat$Hip)
+r_squared_Hip <-summary(Hip)$r.squared
+
+Thigh<- lm(dat$BFP ~ dat$Thigh)
+r_squared_Thigh <-summary(Thigh)$r.squared
+
+Knee<- lm(dat$BFP ~ dat$Knee)
+r_squared_Knee <-summary(Knee)$r.squared
+
+Ankle<- lm(dat$BFP ~ dat$Ankle)
+r_squared_Ankle <-summary(Ankle)$r.squared
+
+Biceps<- lm(dat$BFP ~ dat$Biceps)
+r_squared_Biceps <-summary(Biceps)$r.squared
+
+Forearm<- lm(dat$BFP ~ dat$Forearm)
+r_squared_Forearm <-summary(Forearm)$r.squared
+
+Wrist<- lm(dat$BFP ~ dat$Wrist)
+r_squared_Wrist <-summary(Wrist)$r.squared
+
+```
+
+```{r}
+R_square<-c(r_squared_Age, r_squared_Weight, r_squared_Height, r_squared_Neck, r_squared_Chest, r_squared_Abdomen, r_squared_Hip, r_squared_Thigh, r_squared_Knee, r_squared_Ankle, r_squared_Biceps, r_squared_Forearm, r_squared_Wrist)
+Feature <-c("Age", "Weight", "Height", "Neck", "Chest", "Abdomen", "Hip", "Thigh", "Knee", "Ankle", "Biceps", "Forearm", "Wrist")
+df<-data.frame(Feature, R_square)
+df
+
+```
+
+According to the Scatter plots and R-square values above, among the Features, $Chest$, $Abdomen$, $Hip$ and $Thigh$, show stronger linear association with $BFP$. To minimize the numbers of features used for linear model, and test the correlation among $Chest$, $Abdomen$, $Hip$ and $Thigh$, factor analysis was conducted.
+
+## Factor analysis
+### Determine the number of factors
+
+```{r}
+# keep feature "Chest, Abdomen, Hip and Thigh" for anaylysis 
+data<-dat[, c(7:10)]
+fit<-fa(data, nfactors = 4, rotate = "varimax")
+plot(fit$values, type = "b", main = "Suitable number of factor to choose")
+abline(h =1, col = "red")
+```
+
+
+### Extract the factors and Interprest the factors
+```{r}
+fa_result<-fa(data)
+fa.diagram(fa_result, simple = TRUE)
+factor_scores <-as.data.frame(fa_result$scores)
+cor(factor_scores, data)
+```
+
+However, only one factor $MR1$ was found among these four features and $Cor[Chest, BFP]=0.9107751$, $Cor[Abdomen, BFP]=0.9459778$, $Cor[Hip, BFP]=0.9764733$, $Cor[Thigh, BFP]=0.8485894$ is high that suggests that common factor $MR1$ has strong collinearity with other variables, thereby, reducing the unique explanatory capability of $MR1$. This may affect the validity of the common factor in further analysis. To avoid this, $MR1$ was replaced with $Abdomen$ that showed strongest linear association with $BFP$ for building the linear model.
+
+## Linear model and visualization
+```{r}
+BFP<-dat$BFP
+Abdomen_circumference<-dat$Abdomen
+
+# Linear model
+model<- lm(BFP ~ Abdomen_circumference)
+
+# Coefficients and p-value
+summary(model)$coefficients
+
+# visualization
+ggplot(dat, aes(x = Abdomen_circumference, y = BFP)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y ~ x, se = FALSE, color = "red")+
+  labs(title="BFP on Abdomen_circumference",x="Abdomen circumference (cm)",y="Body Fat Percentage (%) ")
+
+```
+Base on the calculation above, the linear model:
+
+$BFP = 0.67 *Abdomen -42.73
+
+
+
+## Model Diagnostics
+```{r}
+plot(model,which = 1)
+```
+
+The smoothing curve in the residual vs fitting plot is close to the Residuals=0 line and does not have strong pattern, which suggests this model is a good fit linear regression model.
+
+# Conclusion
+There is a linear relationship between BFP and abdomen circumference.A coefficient of 0.63, suggesting a positive association between the two variables.The fitted model has a very low p-value of 2e-16, indicating strong evidence to reject the null hypothesis that the true slope is 0.
+
+
+
+# Citation
+
+Behnke, A.R. and Wilmore, J.H. (1974). Evaluation and Regulation of Body Build and Composition. Prentice-Hall, Englewood Cliffs, N.J.
+
+Katch, Frank and McArdle, William (1977). Nutrition, Weight Control, and Exercise. Houghton Mifflin Co., Boston.
+
+Siri, W.E. (1956), Gross composition of the body. Advances in  Biological and Medical Physics, vol. IV, edited by J.H. Lawrence and C.A.Tobias, Academic Press, Inc., New York.
+
+Deurenberg, P. (1999) The assessment of obesity: methods for measuring body fat and global prevalence of obesity. Bailliere's Clinical Endocrinology and Metabolism 13(1):1-11
+
+
+
+# APPENDIX: The Code
+```{r appendix, echo=TRUE, eval=FALSE, ref.label=all_labels()}
+
+```
